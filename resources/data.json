@@ -1,0 +1,190 @@
+{
+  "names": [
+    {
+      "id": 1,
+      "name": "李垣岩",
+      "pinyin": "li yuan yan",
+      "elements": {
+        "character1": { "char": "垣", "strokes": 9, "element": "土", "radical": "土部" },
+        "character2": { "char": "岩", "strokes": 8, "element": "土", "radical": "山部" }
+      },
+      "compatibility": {
+        "zodiac": "蛇",
+        "favorable_roots": ["山", "土"],
+        "score": 95
+      },
+      "numerology": {
+        "tian_ge": { "value": 7, "element": "金", "luck": "吉" },
+        "ren_ge": { "value": 16, "element": "土", "luck": "吉" },
+        "di_ge": { "value": 17, "element": "金", "luck": "吉" },
+        "zong_ge": { "value": 24, "element": "火", "luck": "吉" },
+        "san_cai": "金土金"
+      },
+      "hexagram": {
+        "name": "山地剥卦",
+        "meaning": "厚积薄发",
+        "calculation": "总笔画17÷8余1→乾卦"
+      },
+      "meaning": {
+        "symbolism": "垣表坚固，岩喻稳重",
+        "interpretation": "象征意志坚定、根基深厚"
+      },
+      "risks": [],
+      "notes": "岩书写需注意结构规范",
+      "total_strokes": 17
+    },
+    {
+      "id": 2,
+      "name": "李安坤",
+      "pinyin": "li an kun", 
+      "elements": {
+        "character1": { "char": "安", "strokes": 6, "element": "土", "radical": "宀部" },
+        "character2": { "char": "坤", "strokes": 8, "element": "土", "radical": "土部" }
+      },
+      "compatibility": {
+        "zodiac": "蛇",
+        "favorable_roots": ["宀"],
+        "score": 92
+      },
+      "numerology": {
+        "tian_ge": { "value": 7, "element": "金", "luck": "吉" },
+        "ren_ge": { "value": 13, "element": "火", "luck": "吉" },
+        "di_ge": { "value": 14, "element": "火", "luck": "半吉" },
+        "zong_ge": { "value": 21, "element": "木", "luck": "吉" },
+        "san_cai": "金火木"
+      },
+      "hexagram": {
+        "name": "山水蒙卦",
+        "meaning": "智慧启蒙",
+        "calculation": "总笔画14÷8余6→坎卦"
+      },
+      "meaning": {
+        "symbolism": "安表平安，坤指大地",
+        "interpretation": "寓意安居乐业、胸怀宽广"
+      },
+      "risks": ["地格14为半吉，需注意性格温和平衡"],
+      "notes": "",
+      "total_strokes": 14
+    },
+    {
+      "id": 3,
+      "name": "李培城",
+      "pinyin": "li pei cheng",
+      "elements": {
+        "character1": { "char": "培", "strokes": 11, "element": "土", "radical": "土部" },
+        "character2": { "char": "城", "strokes": 10, "element": "土", "radical": "土部" }
+      },
+      "compatibility": {
+        "zodiac": "蛇",
+        "favorable_roots": ["土"],
+        "score": 90
+      },
+      "numerology": {
+        "tian_ge": { "value": 7, "element": "金", "luck": "吉" },
+        "ren_ge": { "value": 18, "element": "金", "luck": "吉" },
+        "di_ge": { "value": 21, "element": "木", "luck": "吉" },
+        "zong_ge": { "value": 28, "element": "金", "luck": "半吉" },
+        "san_cai": "金金木"
+      },
+      "hexagram": {
+        "name": "山风蛊卦", 
+        "meaning": "革新进取",
+        "calculation": "总笔画21÷8余5→巽卦"
+      },
+      "meaning": {
+        "symbolism": "培指培育，城喻守护",
+        "interpretation": "象征德才兼备、责任担当"
+      },
+      "risks": ["总格28为半吉，需防事业中过度刚毅引发矛盾"],
+      "notes": "",
+      "total_strokes": 21
+    },
+    {
+      "id": 4,
+      "name": "李岩宇",
+      "pinyin": "li yan yu",
+      "elements": {
+        "character1": { "char": "岩", "strokes": 8, "element": "土", "radical": "山部" },
+        "character2": { "char": "宇", "strokes": 6, "element": "土", "radical": "宀部" }
+      },
+      "compatibility": {
+        "zodiac": "蛇",
+        "favorable_roots": ["山", "宀"],
+        "score": 88
+      },
+      "numerology": {
+        "tian_ge": { "value": 7, "element": "金", "luck": "吉" },
+        "ren_ge": { "value": 15, "element": "土", "luck": "吉" },
+        "di_ge": { "value": 14, "element": "火", "luck": "半吉" },
+        "zong_ge": { "value": 21, "element": "木", "luck": "吉" },
+        "san_cai": "金土火"
+      },
+      "hexagram": {
+        "name": "山水蒙卦",
+        "meaning": "贵人相助", 
+        "calculation": "总笔画14÷8余6→坎卦"
+      },
+      "meaning": {
+        "symbolism": "岩表坚韧，宇指天地",
+        "interpretation": "象征志存高远、品性如石"
+      },
+      "risks": ["地格14为半吉，需注重人际关系调和"],
+      "notes": "",
+      "total_strokes": 14
+    },
+    {
+      "id": 5,
+      "name": "李坤垣",
+      "pinyin": "li kun yuan",
+      "elements": {
+        "character1": { "char": "坤", "strokes": 8, "element": "土", "radical": "土部" },
+        "character2": { "char": "垣", "strokes": 9, "element": "土", "radical": "土部" }
+      },
+      "compatibility": {
+        "zodiac": "蛇",
+        "favorable_roots": ["土"],
+        "score": 96
+      },
+      "numerology": {
+        "tian_ge": { "value": 7, "element": "金", "luck": "吉" },
+        "ren_ge": { "value": 15, "element": "土", "luck": "吉" },
+        "di_ge": { "value": 17, "element": "金", "luck": "吉" },
+        "zong_ge": { "value": 24, "element": "火", "luck": "吉" },
+        "san_cai": "金土金"
+      },
+      "hexagram": {
+        "name": "山地剥卦",
+        "meaning": "长期发展",
+        "calculation": "总笔画17÷8余1→乾卦"
+      },
+      "meaning": {
+        "symbolism": "坤为大地，垣为城郭",
+        "interpretation": "象征稳重可靠、前程广阔"
+      },
+      "risks": [],
+      "notes": "音律搭配流畅（平仄平）",
+      "total_strokes": 17
+    }
+  ],
+  "filters": {
+    "elements": ["金", "木", "水", "火", "土"],
+    "luck_levels": ["吉", "半吉", "凶"],
+    "zodiac": "蛇",
+    "stroke_ranges": [
+      { "min": 10, "max": 15, "label": "10-15画" },
+      { "min": 16, "max": 20, "label": "16-20画" },
+      { "min": 21, "max": 25, "label": "21-25画" },
+      { "min": 26, "max": 30, "label": "26-30画" }
+    ]
+  },
+  "hexagrams": [
+    { "name": "乾卦", "meaning": "天行健，君子以自强不息" },
+    { "name": "坤卦", "meaning": "地势坤，君子以厚德载物" },
+    { "name": "山地剥卦", "meaning": "厚积薄发，以静制动" },
+    { "name": "山水蒙卦", "meaning": "智慧启蒙，贵人相助" },
+    { "name": "山风蛊卦", "meaning": "革新进取，破旧立新" },
+    { "name": "山泽损卦", "meaning": "取舍成长，损己利人" },
+    { "name": "艮为山卦", "meaning": "稳重笃实，止于至善" },
+    { "name": "巽卦", "meaning": "风行草偃，顺势而为" }
+  ]
+}

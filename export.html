@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel导出 - 命理分析系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: #1a1a1a;
+            color: #e5e5e5;
+        }
+        .glass-card {
+            background: rgba(45, 45, 45, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        .title-gradient {
+            background: linear-gradient(135deg, #4ade80, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .checkbox-custom {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4ade80;
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+        }
+        .checkbox-custom:checked {
+            background: #4ade80;
+        }
+        .checkbox-custom:checked::after {
+            content: '✓';
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            color: #1a1a1a;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .preview-table {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .preview-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .preview-table th,
+        .preview-table td {
+            border: 1px solid #2d2d2d;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .preview-table th {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            font-weight: 600;
+        }
+        .preview-table td {
+            color: #e5e5e5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-card">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-xl font-bold title-gradient">命理分析</h1>
+                    <span class="text-sm text-gray-400">Excel导出功能</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="index.html" class="text-gray-300 hover:text-green-300 transition-colors">首页</a>
+                    <a href="analysis.html" class="text-gray-300 hover:text-green-300 transition-colors">详细分析</a>
+                    <a href="comparison.html" class="text-gray-300 hover:text-green-300 transition-colors">名字对比</a>
+                    <a href="export.html" class="text-green-400 hover:text-green-300 transition-colors">导出Excel</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold mb-4 title-gradient">Excel导出功能</h1>
+                <p class="text-gray-400">自定义导出名字数据，支持多种格式和字段选择</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Field Selection -->
+                <div class="lg:col-span-1">
+                    <div class="glass-card rounded-2xl p-6 sticky top-24">
+                        <h2 class="text-xl font-semibold mb-6 text-green-400">选择导出字段</h2>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="selectAll" class="checkbox-custom" checked>
+                                <label for="selectAll" class="font-medium cursor-pointer">全选</label>
+                            </div>
+                            
+                            <div class="border-t border-gray-600 pt-4">
+                                <h3 class="font-medium mb-3 text-yellow-400">基本信息</h3>
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="name" class="checkbox-custom field-checkbox" checked>
+                                        <label for="name" class="text-sm cursor-pointer">名字</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="pinyin" class="checkbox-custom field-checkbox" checked>
+                                        <label for="pinyin" class="text-sm cursor-pointer">拼音</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="total_strokes" class="checkbox-custom field-checkbox" checked>
+                                        <label for="total_strokes" class="text-sm cursor-pointer">总笔画</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="compatibility_score" class="checkbox-custom field-checkbox" checked>
+                                        <label for="compatibility_score" class="text-sm cursor-pointer">适配度评分</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-600 pt-4">
+                                <h3 class="font-medium mb-3 text-yellow-400">五行属性</h3>
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="char1_element" class="checkbox-custom field-checkbox" checked>
+                                        <label for="char1_element" class="text-sm cursor-pointer">首字五行</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="char2_element" class="checkbox-custom field-checkbox" checked>
+                                        <label for="char2_element" class="text-sm cursor-pointer">次字五行</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="char1_strokes" class="checkbox-custom field-checkbox">
+                                        <label for="char1_strokes" class="text-sm cursor-pointer">首字笔画</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="char2_strokes" class="checkbox-custom field-checkbox">
+                                        <label for="char2_strokes" class="text-sm cursor-pointer">次字笔画</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-600 pt-4">
+                                <h3 class="font-medium mb-3 text-yellow-400">五格数理</h3>
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="tian_ge" class="checkbox-custom field-checkbox" checked>
+                                        <label for="tian_ge" class="text-sm cursor-pointer">天格</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="ren_ge" class="checkbox-custom field-checkbox" checked>
+                                        <label for="ren_ge" class="text-sm cursor-pointer">人格</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="di_ge" class="checkbox-custom field-checkbox" checked>
+                                        <label for="di_ge" class="text-sm cursor-pointer">地格</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="zong_ge" class="checkbox-custom field-checkbox" checked>
+                                        <label for="zong_ge" class="text-sm cursor-pointer">总格</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="san_cai" class="checkbox-custom field-checkbox" checked>
+                                        <label for="san_cai" class="text-sm cursor-pointer">三才配置</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-600 pt-4">
+                                <h3 class="font-medium mb-3 text-yellow-400">其他信息</h3>
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="hexagram_name" class="checkbox-custom field-checkbox" checked>
+                                        <label for="hexagram_name" class="text-sm cursor-pointer">周易卦象</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="hexagram_meaning" class="checkbox-custom field-checkbox" checked>
+                                        <label for="hexagram_meaning" class="text-sm cursor-pointer">卦象寓意</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="meaning_interpretation" class="checkbox-custom field-checkbox" checked>
+                                        <label for="meaning_interpretation" class="text-sm cursor-pointer">名字寓意</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="risks" class="checkbox-custom field-checkbox">
+                                        <label for="risks" class="text-sm cursor-pointer">风险提示</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="notes" class="checkbox-custom field-checkbox">
+                                        <label for="notes" class="text-sm cursor-pointer">备注信息</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">导出格式</label>
+                                <select id="exportFormat" class="w-full px-3 py-2 rounded-lg glass-card text-white">
+                                    <option value="xlsx">Excel (.xlsx)</option>
+                                    <option value="csv">CSV文件</option>
+                                    <option value="json">JSON数据</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">文件命名</label>
+                                <input type="text" id="fileName" placeholder="李姓男孩名字分析" 
+                                       class="w-full px-3 py-2 rounded-lg glass-card text-white placeholder-gray-400">
+                            </div>
+                            
+                            <button onclick="exportData()" class="w-full px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition-colors font-medium">
+                                导出数据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview and Options -->
+                <div class="lg:col-span-2">
+                    <div class="space-y-8">
+                        <!-- Data Preview -->
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-semibold text-green-400">数据预览</h2>
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-sm text-gray-400">共 <span id="totalRecords">0</span> 条记录</span>
+                                    <button onclick="refreshPreview()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors">
+                                        刷新预览
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="preview-table" id="dataPreview">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Export Options -->
+                        <div class="glass-card rounded-2xl p-6">
+                            <h2 class="text-xl font-semibold mb-6 text-green-400">高级选项</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="font-medium mb-4 text-yellow-400">筛选条件</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm mb-2">适配度范围</label>
+                                            <div class="flex space-x-2">
+                                                <input type="number" id="minScore" placeholder="最小值" min="0" max="100" 
+                                                       class="w-1/2 px-3 py-2 rounded-lg glass-card text-white placeholder-gray-400 text-sm">
+                                                <input type="number" id="maxScore" placeholder="最大值" min="0" max="100" 
+                                                       class="w-1/2 px-3 py-2 rounded-lg glass-card text-white placeholder-gray-400 text-sm">
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm mb-2">笔画范围</label>
+                                            <div class="flex space-x-2">
+                                                <input type="number" id="minStrokes" placeholder="最小值" min="1" max="50" 
+                                                       class="w-1/2 px-3 py-2 rounded-lg glass-card text-white placeholder-gray-400 text-sm">
+                                                <input type="number" id="maxStrokes" placeholder="最大值" min="1" max="50" 
+                                                       class="w-1/2 px-3 py-2 rounded-lg glass-card text-white placeholder-gray-400 text-sm">
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm mb-2">五行属性</label>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <label class="flex items-center space-x-2 text-sm">
+                                                    <input type="checkbox" class="checkbox-custom element-filter" value="金" checked>
+                                                    <span>金</span>
+                                                </label>
+                                                <label class="flex items-center space-x-2 text-sm">
+                                                    <input type="checkbox" class="checkbox-custom element-filter" value="木" checked>
+                                                    <span>木</span>
+                                                </label>
+                                                <label class="flex items-center space-x-2 text-sm">
+                                                    <input type="checkbox" class="checkbox-custom element-filter" value="水" checked>
+                                                    <span>水</span>
+                                                </label>
+                                                <label class="flex items-center space-x-2 text-sm">
+                                                    <input type="checkbox" class="checkbox-custom element-filter" value="火" checked>
+                                                    <span>火</span>
+                                                </label>
+                                                <label class="flex items-center space-x-2 text-sm">
+                                                    <input type="checkbox" class="checkbox-custom element-filter" value="土" checked>
+                                                    <span>土</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="font-medium mb-4 text-yellow-400">排序选项</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm mb-2">排序字段</label>
+                                            <select id="sortField" class="w-full px-3 py-2 rounded-lg glass-card text-white text-sm">
+                                                <option value="compatibility.score">适配度评分</option>
+                                                <option value="name">名字</option>
+                                                <option value="total_strokes">总笔画</option>
+                                                <option value="numerology.zong_ge.value">总格数理</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm mb-2">排序方式</label>
+                                            <select id="sortOrder" class="w-full px-3 py-2 rounded-lg glass-card text-white text-sm">
+                                                <option value="desc">降序</option>
+                                                <option value="asc">升序</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm mb-2">导出数量</label>
+                                            <select id="exportLimit" class="w-full px-3 py-2 rounded-lg glass-card text-white text-sm">
+                                                <option value="all">全部</option>
+                                                <option value="10">前10条</option>
+                                                <option value="20">前20条</option>
+                                                <option value="50">前50条</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Batch Operations -->
+                        <div class="glass-card rounded-2xl p-6">
+                            <h2 class="text-xl font-semibold mb-6 text-green-400">批量操作</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <button onclick="exportAllData()" class="px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm">
+                                    导出完整数据
+                                </button>
+                                <button onclick="exportFilteredData()" class="px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition-colors text-sm">
+                                    导出筛选数据
+                                </button>
+                                <button onclick="exportComparisonTemplate()" class="px-4 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors text-sm">
+                                    导出对比模板
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">© 2025 命理分析系统. 基于传统命理学的现代化名字分析工具.</p>
+        </div>
+    </footer>
+
+    <script>
+        let allNames = [];
+        let filteredNames = [];
+        let selectedFields = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNamesData();
+            setupEventListeners();
+            initializeFields();
+        });
+
+        // Load names data
+        async function loadNamesData() {
+            try {
+                const response = await fetch('resources/data-complete.json');
+                const data = await response.json();
+                allNames = data.names;
+                filteredNames = [...allNames];
+                updateRecordCount();
+                refreshPreview();
+            } catch (error) {
+                console.error('Error loading names data:', error);
+                allNames = getFallbackData();
+                filteredNames = [...allNames];
+                updateRecordCount();
+                refreshPreview();
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Select all checkbox
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.field-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateSelectedFields();
+                refreshPreview();
+            });
+
+            // Individual field checkboxes
+            document.querySelectorAll('.field-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectedFields();
+                    refreshPreview();
+                    
+                    // Update select all state
+                    const total = document.querySelectorAll('.field-checkbox').length;
+                    const checked = document.querySelectorAll('.field-checkbox:checked').length;
+                    document.getElementById('selectAll').checked = total === checked;
+                });
+            });
+
+            // Filter inputs
+            ['minScore', 'maxScore', 'minStrokes', 'maxStrokes'].forEach(id => {
+                document.getElementById(id).addEventListener('input', applyFilters);
+            });
+
+            // Element filters
+            document.querySelectorAll('.element-filter').forEach(checkbox => {
+                checkbox.addEventListener('change', applyFilters);
+            });
+
+            // Sort options
+            ['sortField', 'sortOrder'].forEach(id => {
+                document.getElementById(id).addEventListener('change', applyFilters);
+            });
+        }
+
+        // Initialize default fields
+        function initializeFields() {
+            updateSelectedFields();
+        }
+
+        // Update selected fields
+        function updateSelectedFields() {
+            selectedFields = [];
+            document.querySelectorAll('.field-checkbox:checked').forEach(checkbox => {
+                selectedFields.push(checkbox.id);
+            });
+        }
+
+        // Apply filters
+        function applyFilters() {
+            let filtered = [...allNames];
+
+            // Score filter
+            const minScore = parseInt(document.getElementById('minScore').value) || 0;
+            const maxScore = parseInt(document.getElementById('maxScore').value) || 100;
+            filtered = filtered.filter(name => 
+                name.compatibility.score >= minScore && name.compatibility.score <= maxScore
+            );
+
+            // Strokes filter
+            const minStrokes = parseInt(document.getElementById('minStrokes').value) || 0;
+            const maxStrokes = parseInt(document.getElementById('maxStrokes').value) || 100;
+            filtered = filtered.filter(name => 
+                name.total_strokes >= minStrokes && name.total_strokes <= maxStrokes
+            );
+
+            // Element filter
+            const selectedElements = Array.from(document.querySelectorAll('.element-filter:checked'))
+                .map(cb => cb.value);
+            if (selectedElements.length > 0) {
+                filtered = filtered.filter(name => 
+                    selectedElements.includes(name.elements.character1.element) ||
+                    selectedElements.includes(name.elements.character2.element)
+                );
+            }
+
+            // Sort
+            const sortField = document.getElementById('sortField').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+            
+            filtered.sort((a, b) => {
+                let aValue = getNestedValue(a, sortField);
+                let bValue = getNestedValue(b, sortField);
+                
+                if (typeof aValue === 'string') {
+                    aValue = aValue.localeCompare(bValue);
+                    bValue = 0;
+                }
+                
+                return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+            });
+
+            filteredNames = filtered;
+            updateRecordCount();
+            refreshPreview();
+        }
+
+        // Get nested object value
+        function getNestedValue(obj, path) {
+            return path.split('.').reduce((current, key) => current && current[key], obj);
+        }
+
+        // Update record count
+        function updateRecordCount() {
+            document.getElementById('totalRecords').textContent = filteredNames.length;
+        }
+
+        // Refresh preview
+        function refreshPreview() {
+            const preview = document.getElementById('dataPreview');
+            const limit = document.getElementById('exportLimit').value;
+            const namesToShow = limit === 'all' ? filteredNames : filteredNames.slice(0, parseInt(limit));
+            
+            if (selectedFields.length === 0) {
+                preview.innerHTML = '<p class="text-gray-400 text-center py-8">请至少选择一个字段</p>';
+                return;
+            }
+
+            // Create table
+            let tableHTML = '<table><thead><tr>';
+            
+            // Headers
+            const fieldLabels = {
+                'name': '名字',
+                'pinyin': '拼音',
+                'total_strokes': '总笔画',
+                'compatibility_score': '适配度',
+                'char1_element': '首字五行',
+                'char2_element': '次字五行',
+                'char1_strokes': '首字笔画',
+                'char2_strokes': '次字笔画',
+                'tian_ge': '天格',
+                'ren_ge': '人格',
+                'di_ge': '地格',
+                'zong_ge': '总格',
+                'san_cai': '三才',
+                'hexagram_name': '卦象',
+                'hexagram_meaning': '寓意',
+                'meaning_interpretation': '解读',
+                'risks': '风险',
+                'notes': '备注'
+            };
+
+            selectedFields.forEach(field => {
+                tableHTML += `<th>${fieldLabels[field] || field}</th>`;
+            });
+            
+            tableHTML += '</tr></thead><tbody>';
+
+            // Data rows
+            namesToShow.forEach(name => {
+                tableHTML += '<tr>';
+                selectedFields.forEach(field => {
+                    let value = getFieldValue(name, field);
+                    tableHTML += `<td>${value}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+
+            tableHTML += '</tbody></table>';
+            preview.innerHTML = tableHTML;
+        }
+
+        // Get field value
+        function getFieldValue(name, field) {
+            switch (field) {
+                case 'name': return name.name;
+                case 'pinyin': return name.pinyin;
+                case 'total_strokes': return name.total_strokes;
+                case 'compatibility_score': return name.compatibility.score;
+                case 'char1_element': return name.elements.character1.element;
+                case 'char2_element': return name.elements.character2.element;
+                case 'char1_strokes': return name.elements.character1.strokes;
+                case 'char2_strokes': return name.elements.character2.strokes;
+                case 'tian_ge': return `${name.numerology.tian_ge.value}(${name.numerology.tian_ge.element})`;
+                case 'ren_ge': return `${name.numerology.ren_ge.value}(${name.numerology.ren_ge.element})`;
+                case 'di_ge': return `${name.numerology.di_ge.value}(${name.numerology.di_ge.element})`;
+                case 'zong_ge': return `${name.numerology.zong_ge.value}(${name.numerology.zong_ge.element})`;
+                case 'san_cai': return name.numerology.san_cai;
+                case 'hexagram_name': return name.hexagram.name;
+                case 'hexagram_meaning': return name.hexagram.meaning;
+                case 'meaning_interpretation': return name.meaning.interpretation;
+                case 'risks': return name.risks.length > 0 ? name.risks.join('; ') : '无';
+                case 'notes': return name.notes || '无';
+                default: return '';
+            }
+        }
+
+        // Export data
+        function exportData() {
+            const format = document.getElementById('exportFormat').value;
+            const fileName = document.getElementById('fileName').value || '李姓男孩名字分析';
+            
+            switch (format) {
+                case 'xlsx':
+                    exportToExcel(fileName);
+                    break;
+                case 'csv':
+                    exportToCSV(fileName);
+                    break;
+                case 'json':
+                    exportToJSON(fileName);
+                    break;
+            }
+        }
+
+        // Export to Excel
+        function exportToExcel(fileName) {
+            const workbook = XLSX.utils.book_new();
+            const worksheetData = [];
+            
+            // Headers
+            const headers = [];
+            const fieldLabels = {
+                'name': '名字',
+                'pinyin': '拼音',
+                'total_strokes': '总笔画',
+                'compatibility_score': '适配度评分',
+                'char1_element': '首字五行',
+                'char2_element': '次字五行',
+                'char1_strokes': '首字笔画',
+                'char2_strokes': '次字笔画',
+                'tian_ge': '天格',
+                'ren_ge': '人格',
+                'di_ge': '地格',
+                'zong_ge': '总格',
+                'san_cai': '三才配置',
+                'hexagram_name': '周易卦象',
+                'hexagram_meaning': '卦象寓意',
+                'meaning_interpretation': '名字寓意',
+                'risks': '风险提示',
+                'notes': '备注信息'
+            };
+            
+            selectedFields.forEach(field => {
+                headers.push(fieldLabels[field] || field);
+            });
+            worksheetData.push(headers);
+
+            // Data
+            filteredNames.forEach(name => {
+                const row = [];
+                selectedFields.forEach(field => {
+                    row.push(getFieldValue(name, field));
+                });
+                worksheetData.push(row);
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            XLSX.utils.book_append_sheet(workbook, worksheet, '名字分析');
+            
+            // Add summary sheet
+            const summaryData = [
+                ['统计信息', ''],
+                ['总记录数', filteredNames.length],
+                ['最高适配度', Math.max(...filteredNames.map(n => n.compatibility.score))],
+                ['最低适配度', Math.min(...filteredNames.map(n => n.compatibility.score))],
+                ['平均适配度', Math.round(filteredNames.reduce((sum, n) => sum + n.compatibility.score, 0) / filteredNames.length)],
+                ['', ''],
+                ['五行分布', ''],
+                ...Object.entries(getElementDistribution()).map(([element, count]) => [element, count])
+            ];
+            
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(workbook, summarySheet, '统计信息');
+
+            XLSX.writeFile(workbook, `${fileName}.xlsx`);
+        }
+
+        // Export to CSV
+        function exportToCSV(fileName) {
+            let csvContent = '';
+            
+            // Headers
+            const headers = [];
+            const fieldLabels = {
+                'name': '名字',
+                'pinyin': '拼音',
+                'total_strokes': '总笔画',
+                'compatibility_score': '适配度评分',
+                'char1_element': '首字五行',
+                'char2_element': '次字五行',
+                'char1_strokes': '首字笔画',
+                'char2_strokes': '次字笔画',
+                'tian_ge': '天格',
+                'ren_ge': '人格',
+                'di_ge': '地格',
+                'zong_ge': '总格',
+                'san_cai': '三才配置',
+                'hexagram_name': '周易卦象',
+                'hexagram_meaning': '卦象寓意',
+                'meaning_interpretation': '名字寓意',
+                'risks': '风险提示',
+                'notes': '备注信息'
+            };
+            
+            selectedFields.forEach(field => {
+                headers.push(fieldLabels[field] || field);
+            });
+            csvContent += headers.join(',') + '\n';
+
+            // Data
+            filteredNames.forEach(name => {
+                const row = [];
+                selectedFields.forEach(field => {
+                    let value = getFieldValue(name, field);
+                    // Escape commas in CSV
+                    if (typeof value === 'string' && value.includes(',')) {
+                        value = `"${value}"`;
+                    }
+                    row.push(value);
+                });
+                csvContent += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Export to JSON
+        function exportToJSON(fileName) {
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                totalRecords: filteredNames.length,
+                fields: selectedFields,
+                data: filteredNames.map(name => {
+                    const record = {};
+                    selectedFields.forEach(field => {
+                        record[field] = getFieldValue(name, field);
+                    });
+                    return record;
+                })
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Export all data
+        function exportAllData() {
+            // Temporarily disable filters
+            const tempFiltered = filteredNames;
+            filteredNames = allNames;
+            
+            // Select all fields
+            document.querySelectorAll('.field-checkbox').forEach(cb => cb.checked = true);
+            updateSelectedFields();
+            
+            exportData();
+            
+            // Restore
+            filteredNames = tempFiltered;
+            refreshPreview();
+        }
+
+        // Export filtered data
+        function exportFilteredData() {
+            applyFilters();
+            exportData();
+        }
+
+        // Export comparison template
+        function exportComparisonTemplate() {
+            const templateData = [
+                ['名字1', '名字2', '名字3', '名字4'],
+                ['适配度', '', '', ''],
+                ['总笔画', '', '', ''],
+                ['五行属性', '', '', ''],
+                ['天格', '', '', ''],
+                ['人格', '', '', ''],
+                ['地格', '', '', ''],
+                ['总格', '', '', ''],
+                ['三才配置', '', '', ''],
+                ['周易卦象', '', '', ''],
+                ['卦象寓意', '', '', ''],
+                ['名字寓意', '', '', ''],
+                ['综合评分', '', '', '']
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.aoa_to_sheet(templateData);
+            XLSX.utils.book_append_sheet(workbook, worksheet, '对比模板');
+            
+            XLSX.writeFile(workbook, '名字对比模板.xlsx');
+        }
+
+        // Get element distribution
+        function getElementDistribution() {
+            const distribution = {};
+            filteredNames.forEach(name => {
+                const elem1 = name.elements.character1.element;
+                const elem2 = name.elements.character2.element;
+                distribution[elem1] = (distribution[elem1] || 0) + 1;
+                if (elem1 !== elem2) {
+                    distribution[elem2] = (distribution[elem2] || 0) + 1;
+                }
+            });
+            return distribution;
+        }
+
+        // Fallback data
+        function getFallbackData() {
+            return [
+                {
+                    id: 1,
+                    name: "李垣岩",
+                    pinyin: "li yuan yan",
+                    elements: {
+                        character1: { char: "垣", strokes: 9, element: "土", radical: "土部" },
+                        character2: { char: "岩", strokes: 8, element: "土", radical: "山部" }
+                    },
+                    compatibility: {
+                        zodiac: "蛇",
+                        favorable_roots: ["山", "土"],
+                        score: 95
+                    },
+                    numerology: {
+                        tian_ge: { value: 7, element: "金", luck: "吉" },
+                        ren_ge: { value: 16, element: "土", luck: "吉" },
+                        di_ge: { value: 17, element: "金", luck: "吉" },
+                        zong_ge: { value: 24, element: "火", luck: "吉" },
+                        san_cai: "金土金"
+                    },
+                    hexagram: {
+                        name: "山地剥卦",
+                        meaning: "厚积薄发",
+                        calculation: "总笔画17÷8余1→乾卦"
+                    },
+                    meaning: {
+                        symbolism: "垣表坚固，岩喻稳重",
+                        interpretation: "象征意志坚定、根基深厚"
+                    },
+                    risks: [],
+                    notes: "岩书写需注意结构规范",
+                    total_strokes: 17
+                }
+            ];
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>详细分析 - 命理分析系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: #1a1a1a;
+            color: #e5e5e5;
+        }
+        .glass-card {
+            background: rgba(45, 45, 45, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        .title-gradient {
+            background: linear-gradient(135deg, #4ade80, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .element-土 { background: #fbbf24; color: #1a1a1a; }
+        .element-金 { background: #e5e5e5; color: #1a1a1a; }
+        .element-木 { background: #4ade80; color: #1a1a1a; }
+        .element-水 { background: #3b82f6; color: #e5e5e5; }
+        .element-火 { background: #ef4444; color: #e5e5e5; }
+        .luck-吉 { color: #4ade80; }
+        .luck-半吉 { color: #fbbf24; }
+        .luck-凶 { color: #ef4444; }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: #4ade80;
+            color: #1a1a1a;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-card">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-xl font-bold title-gradient">命理分析</h1>
+                    <span class="text-sm text-gray-400">详细分析报告</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="index.html" class="text-gray-300 hover:text-green-300 transition-colors">首页</a>
+                    <a href="analysis.html" class="text-green-400 hover:text-green-300 transition-colors">详细分析</a>
+                    <a href="comparison.html" class="text-gray-300 hover:text-green-300 transition-colors">名字对比</a>
+                    <a href="export.html" class="text-gray-300 hover:text-green-300 transition-colors">导出Excel</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Back Button -->
+            <div class="mb-8">
+                <button onclick="history.back()" class="flex items-center space-x-2 text-green-400 hover:text-green-300 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    <span>返回列表</span>
+                </button>
+            </div>
+
+            <!-- Name Header -->
+            <div id="nameHeader" class="glass-card rounded-2xl p-8 mb-8">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Analysis Tabs -->
+            <div class="glass-card rounded-2xl p-6 mb-8">
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <button class="tab-button active px-6 py-2 rounded-lg glass-card" data-tab="overview">综合概览</button>
+                    <button class="tab-button px-6 py-2 rounded-lg glass-card" data-tab="elements">五行分析</button>
+                    <button class="tab-button px-6 py-2 rounded-lg glass-card" data-tab="numerology">数理分析</button>
+                    <button class="tab-button px-6 py-2 rounded-lg glass-card" data-tab="hexagram">卦象解读</button>
+                    <button class="tab-button px-6 py-2 rounded-lg glass-card" data-tab="risks">风险提示</button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div id="tabContents">
+                    <!-- Overview Tab -->
+                    <div class="tab-content active" id="overview">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-green-400">名字寓意</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-medium text-yellow-400 mb-2">象征意义</h4>
+                                        <p class="text-gray-300" id="symbolismText"></p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-yellow-400 mb-2">整体解读</h4>
+                                        <p class="text-gray-300" id="interpretationText"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-green-400">综合评分</h3>
+                                <div id="radarChart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Elements Tab -->
+                    <div class="tab-content" id="elements">
+                        <h3 class="text-xl font-semibold mb-6 text-green-400">五行属性分析</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-medium text-yellow-400 mb-4">字形分析</h4>
+                                <div id="characterAnalysis" class="space-y-4">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-yellow-400 mb-4">五行平衡</h4>
+                                <div id="elementsChart" style="height: 250px;"></div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <h4 class="font-medium text-yellow-400 mb-4">生肖适配分析</h4>
+                            <div id="zodiacAnalysis" class="text-gray-300">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Numerology Tab -->
+                    <div class="tab-content" id="numerology">
+                        <h3 class="text-xl font-semibold mb-6 text-green-400">五格数理详解</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <div class="space-y-6">
+                                    <div class="glass-card rounded-lg p-4">
+                                        <h4 class="font-medium text-yellow-400 mb-2">天格 (祖先运)</h4>
+                                        <div id="tianGeAnalysis"></div>
+                                    </div>
+                                    <div class="glass-card rounded-lg p-4">
+                                        <h4 class="font-medium text-yellow-400 mb-2">人格 (主运)</h4>
+                                        <div id="renGeAnalysis"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="space-y-6">
+                                    <div class="glass-card rounded-lg p-4">
+                                        <h4 class="font-medium text-yellow-400 mb-2">地格 (前运)</h4>
+                                        <div id="diGeAnalysis"></div>
+                                    </div>
+                                    <div class="glass-card rounded-lg p-4">
+                                        <h4 class="font-medium text-yellow-400 mb-2">总格 (后运)</h4>
+                                        <div id="zongGeAnalysis"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <div class="glass-card rounded-lg p-6">
+                                <h4 class="font-medium text-yellow-400 mb-4">三才配置</h4>
+                                <div id="sanCaiAnalysis"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hexagram Tab -->
+                    <div class="tab-content" id="hexagram">
+                        <h3 class="text-xl font-semibold mb-6 text-green-400">周易卦象解读</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <div class="glass-card rounded-lg p-6">
+                                    <h4 class="font-medium text-yellow-400 mb-4">卦象信息</h4>
+                                    <div id="hexagramInfo">
+                                        <!-- Will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="glass-card rounded-lg p-6">
+                                    <h4 class="font-medium text-yellow-400 mb-4">卦象寓意</h4>
+                                    <div id="hexagramMeaning">
+                                        <!-- Will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risks Tab -->
+                    <div class="tab-content" id="risks">
+                        <h3 class="text-xl font-semibold mb-6 text-green-400">风险提示与建议</h3>
+                        <div id="risksContent">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-4 justify-center">
+                <button onclick="addToCompareList()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                    加入对比列表
+                </button>
+                <button onclick="exportSingleName()" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
+                    导出分析报告
+                </button>
+                <button onclick="window.location.href='index.html'" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors">
+                    返回名字列表
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">© 2025 命理分析系统. 基于传统命理学的现代化名字分析工具.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentName = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNameData();
+            setupTabSwitching();
+        });
+
+        // Load name data from localStorage or fallback
+        function loadNameData() {
+            const storedName = localStorage.getItem('selectedName');
+            if (storedName) {
+                currentName = JSON.parse(storedName);
+                populateNameHeader();
+                populateAllTabs();
+            } else {
+                // Fallback to first name if no selection
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Setup tab switching
+        function setupTabSwitching() {
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    
+                    // Update button states
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update content
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        // Populate name header
+        function populateNameHeader() {
+            const header = document.getElementById('nameHeader');
+            const name = currentName;
+            
+            header.innerHTML = `
+                <div class="flex flex-col lg:flex-row items-center justify-between">
+                    <div class="text-center lg:text-left mb-6 lg:mb-0">
+                        <h1 class="text-5xl font-bold mb-2 title-gradient">${name.name}</h1>
+                        <p class="text-xl text-gray-400 mb-4">${name.pinyin}</p>
+                        <div class="flex items-center justify-center lg:justify-start space-x-4">
+                            <span class="px-4 py-2 bg-green-600 text-white rounded-full text-sm">
+                                适配度: ${name.compatibility.score}分
+                            </span>
+                            <span class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm">
+                                ${name.total_strokes}画
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-6xl font-bold text-yellow-400 mb-2">${name.compatibility.score}</div>
+                        <div class="text-gray-400">综合评分</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Populate all tabs
+        function populateAllTabs() {
+            populateOverviewTab();
+            populateElementsTab();
+            populateNumerologyTab();
+            populateHexagramTab();
+            populateRisksTab();
+        }
+
+        // Populate overview tab
+        function populateOverviewTab() {
+            const name = currentName;
+            document.getElementById('symbolismText').textContent = name.meaning.symbolism;
+            document.getElementById('interpretationText').textContent = name.meaning.interpretation;
+            
+            // Create radar chart
+            const radarChart = echarts.init(document.getElementById('radarChart'));
+            const option = {
+                tooltip: {
+                    backgroundColor: 'rgba(45, 45, 45, 0.9)',
+                    borderColor: '#4ade80',
+                    textStyle: { color: '#e5e5e5' }
+                },
+                radar: {
+                    indicator: [
+                        { name: '五行适配', max: 100 },
+                        { name: '生肖契合', max: 100 },
+                        { name: '数理吉凶', max: 100 },
+                        { name: '卦象寓意', max: 100 },
+                        { name: '音律美感', max: 100 }
+                    ],
+                    axisName: { color: '#e5e5e5' },
+                    splitLine: { lineStyle: { color: '#2d2d2d' } },
+                    splitArea: { show: false }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [{
+                        value: [
+                            name.compatibility.score,
+                            name.compatibility.score,
+                            name.compatibility.score * 0.9,
+                            name.compatibility.score * 0.95,
+                            name.compatibility.score * 0.85
+                        ],
+                        areaStyle: {
+                            color: 'rgba(74, 222, 128, 0.3)'
+                        },
+                        lineStyle: {
+                            color: '#4ade80'
+                        }
+                    }]
+                }]
+            };
+            radarChart.setOption(option);
+        }
+
+        // Populate elements tab
+        function populateElementsTab() {
+            const name = currentName;
+            
+            // Character analysis
+            const charAnalysis = document.getElementById('characterAnalysis');
+            charAnalysis.innerHTML = `
+                <div class="glass-card rounded-lg p-4 mb-4">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-2xl font-bold">${name.elements.character1.char}</span>
+                        <span class="element-tag element-${name.elements.character1.element}">${name.elements.character1.element}</span>
+                        <span class="text-sm text-gray-400">${name.elements.character1.strokes}画</span>
+                    </div>
+                    <p class="text-sm text-gray-300">部首: ${name.elements.character1.radical}</p>
+                </div>
+                <div class="glass-card rounded-lg p-4">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-2xl font-bold">${name.elements.character2.char}</span>
+                        <span class="element-tag element-${name.elements.character2.element}">${name.elements.character2.element}</span>
+                        <span class="text-sm text-gray-400">${name.elements.character2.strokes}画</span>
+                    </div>
+                    <p class="text-sm text-gray-300">部首: ${name.elements.character2.radical}</p>
+                </div>
+            `;
+            
+            // Elements chart
+            const elementsChart = echarts.init(document.getElementById('elementsChart'));
+            const elementsData = [
+                { name: name.elements.character1.element, value: name.elements.character1.strokes },
+                { name: name.elements.character2.element, value: name.elements.character2.strokes }
+            ];
+            
+            const option = {
+                tooltip: {
+                    backgroundColor: 'rgba(45, 45, 45, 0.9)',
+                    borderColor: '#4ade80',
+                    textStyle: { color: '#e5e5e5' }
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '70%',
+                    data: elementsData.map(item => ({
+                        ...item,
+                        itemStyle: { color: getElementColor(item.name) }
+                    }))
+                }]
+            };
+            elementsChart.setOption(option);
+            
+            // Zodiac analysis
+            const zodiacAnalysis = document.getElementById('zodiacAnalysis');
+            zodiacAnalysis.innerHTML = `
+                <div class="glass-card rounded-lg p-6">
+                    <p class="mb-4">生肖: <span class="text-yellow-400">${name.compatibility.zodiac}</span></p>
+                    <p class="mb-4">宜用字根: <span class="text-green-400">${name.compatibility.favorable_roots.join(', ')}</span></p>
+                    <p>适配度评分: <span class="text-2xl font-bold text-yellow-400">${name.compatibility.score}分</span></p>
+                </div>
+            `;
+        }
+
+        // Populate numerology tab
+        function populateNumerologyTab() {
+            const name = currentName;
+            
+            document.getElementById('tianGeAnalysis').innerHTML = createGeAnalysis(name.numerology.tian_ge, '天格');
+            document.getElementById('renGeAnalysis').innerHTML = createGeAnalysis(name.numerology.ren_ge, '人格');
+            document.getElementById('diGeAnalysis').innerHTML = createGeAnalysis(name.numerology.di_ge, '地格');
+            document.getElementById('zongGeAnalysis').innerHTML = createGeAnalysis(name.numerology.zong_ge, '总格');
+            
+            document.getElementById('sanCaiAnalysis').innerHTML = `
+                <div class="flex items-center space-x-4 mb-4">
+                    <span class="text-lg font-medium">三才配置:</span>
+                    <span class="px-3 py-1 bg-blue-600 text-white rounded-full">${name.numerology.san_cai}</span>
+                </div>
+                <p class="text-gray-300">三才配置代表天地人三才的五行关系，影响个人运势的发展。</p>
+            `;
+        }
+
+        // Create ge analysis HTML
+        function createGeAnalysis(ge, geName) {
+            return `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-lg font-bold">${ge.value}</span>
+                    <div class="flex items-center space-x-2">
+                        <span class="element-tag element-${ge.element}">${ge.element}</span>
+                        <span class="luck-${ge.luck}">${ge.luck}</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400">${geName}代表${getGeDescription(geName)}</p>
+            `;
+        }
+
+        // Get ge description
+        function getGeDescription(geName) {
+            const descriptions = {
+                '天格': '祖先运势，影响较小',
+                '人格': '主运势，性格特点',
+                '地格': '前运势，青少年运',
+                '总格': '后运势，晚年运势'
+            };
+            return descriptions[geName] || '';
+        }
+
+        // Populate hexagram tab
+        function populateHexagramTab() {
+            const name = currentName;
+            
+            document.getElementById('hexagramInfo').innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-gray-400">卦象名称:</span>
+                        <span class="text-xl font-bold text-blue-400 ml-2">${name.hexagram.name}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400">计算方式:</span>
+                        <span class="text-gray-300 ml-2">${name.hexagram.calculation}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('hexagramMeaning').innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-gray-400">卦象寓意:</span>
+                        <span class="text-yellow-400 ml-2">${name.hexagram.meaning}</span>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-300">此卦象${name.hexagram.meaning}，预示着人生道路上的发展方向和运势特点。</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Populate risks tab
+        function populateRisksTab() {
+            const name = currentName;
+            const risksContent = document.getElementById('risksContent');
+            
+            if (name.risks.length === 0) {
+                risksContent.innerHTML = `
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <h4 class="text-lg font-medium text-green-400">无明显风险</h4>
+                        </div>
+                        <p class="text-gray-300">此名字各方面配置较为理想，没有明显的风险需要注意。</p>
+                        ${name.notes ? `<p class="text-gray-400 mt-4"><strong>备注:</strong> ${name.notes}</p>` : ''}
+                    </div>
+                `;
+            } else {
+                risksContent.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="glass-card rounded-lg p-6">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-medium text-yellow-400">注意事项</h4>
+                            </div>
+                            <ul class="space-y-2">
+                                ${name.risks.map(risk => `
+                                    <li class="flex items-start space-x-2">
+                                        <span class="text-yellow-400 mt-1">•</span>
+                                        <span class="text-gray-300">${risk}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                            ${name.notes ? `<p class="text-gray-400 mt-4"><strong>备注:</strong> ${name.notes}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Utility functions
+        function getElementColor(element) {
+            const colors = {
+                '金': '#e5e5e5',
+                '木': '#4ade80',
+                '水': '#3b82f6',
+                '火': '#ef4444',
+                '土': '#fbbf24'
+            };
+            return colors[element] || '#6b7280';
+        }
+
+        // Action functions
+        function addToCompareList() {
+            let compareList = JSON.parse(localStorage.getItem('compareList') || '[]');
+            if (compareList.length >= 4) {
+                alert('对比列表已满，最多只能对比4个名字');
+                return;
+            }
+            
+            if (!compareList.includes(currentName.id)) {
+                compareList.push(currentName.id);
+                localStorage.setItem('compareList', JSON.stringify(compareList));
+                alert('已加入对比列表');
+            } else {
+                alert('该名字已在对比列表中');
+            }
+        }
+
+        function exportSingleName() {
+            // Create a simple text report
+            const report = `
+名字: ${currentName.name} (${currentName.pinyin})
+适配度: ${currentName.compatibility.score}分
+总笔画: ${currentName.total_strokes}画
+五行: ${currentName.elements.character1.element} + ${currentName.elements.character2.element}
+寓意: ${currentName.meaning.interpretation}
+卦象: ${currentName.hexagram.name} (${currentName.hexagram.meaning})
+
+五格数理:
+- 天格: ${currentName.numerology.tian_ge.value} (${currentName.numerology.tian_ge.element}/${currentName.numerology.tian_ge.luck})
+- 人格: ${currentName.numerology.ren_ge.value} (${currentName.numerology.ren_ge.element}/${currentName.numerology.ren_ge.luck})
+- 地格: ${currentName.numerology.di_ge.value} (${currentName.numerology.di_ge.element}/${currentName.numerology.di_ge.luck})
+- 总格: ${currentName.numerology.zong_ge.value} (${currentName.numerology.zong_ge.element}/${currentName.numerology.zong_ge.luck})
+
+三才配置: ${currentName.numerology.san_cai}
+
+风险提示:
+${currentName.risks.length > 0 ? currentName.risks.join('\n') : '无明显风险'}
+            `;
+            
+            // Create and download file
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentName.name}_分析报告.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>命理分析 - 李姓男孩名字详解</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: #1a1a1a;
+            color: #e5e5e5;
+        }
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9), rgba(45, 45, 45, 0.8)), url('resources/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(45, 45, 45, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        .name-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .name-card:hover {
+            transform: translateY(-5px) rotateX(5deg);
+            box-shadow: 0 20px 40px rgba(74, 222, 128, 0.3);
+        }
+        .filter-btn {
+            transition: all 0.3s ease;
+        }
+        .filter-btn.active {
+            background: #4ade80;
+            color: #1a1a1a;
+        }
+        .element-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .element-土 { background: #fbbf24; color: #1a1a1a; }
+        .element-金 { background: #e5e5e5; color: #1a1a1a; }
+        .element-木 { background: #4ade80; color: #1a1a1a; }
+        .element-水 { background: #3b82f6; color: #e5e5e5; }
+        .element-火 { background: #ef4444; color: #e5e5e5; }
+        .luck-吉 { color: #4ade80; }
+        .luck-半吉 { color: #fbbf24; }
+        .luck-凶 { color: #ef4444; }
+        #p5-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .title-gradient {
+            background: linear-gradient(135deg, #4ade80, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <!-- P5.js Background Canvas -->
+    <div id="p5-container"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-card">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-xl font-bold title-gradient">命理分析</h1>
+                    <span class="text-sm text-gray-400">李姓男孩名字详解</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="index.html" class="text-green-400 hover:text-green-300 transition-colors">首页</a>
+                    <a href="analysis.html" class="text-gray-300 hover:text-green-300 transition-colors">详细分析</a>
+                    <a href="comparison.html" class="text-gray-300 hover:text-green-300 transition-colors">名字对比</a>
+                    <a href="export.html" class="text-gray-300 hover:text-green-300 transition-colors">导出Excel</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-bg min-h-screen flex items-center justify-center pt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="hero-content">
+                <h1 class="text-6xl font-bold mb-6 title-gradient" style="font-family: 'Noto Serif SC', serif;">
+                    李氏男孩名字命理分析
+                </h1>
+                <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                    基于五行学说、生肖适配、五格数理和周易卦象的专业名字分析系统，
+                    为您的孩子选择最吉祥如意的名字。
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="搜索名字或寓意..." 
+                               class="px-6 py-3 rounded-full glass-card text-white placeholder-gray-400 w-80 focus:outline-none focus:ring-2 focus:ring-green-400">
+                        <button class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-green-400 hover:text-green-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <button onclick="scrollToNames()" class="px-8 py-3 bg-green-500 hover:bg-green-600 text-black font-medium rounded-full transition-colors">
+                        开始浏览
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="namesSection">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Filters Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="glass-card rounded-2xl p-6 sticky top-24">
+                    <h3 class="text-lg font-semibold mb-6 text-green-400">筛选条件</h3>
+                    
+                    <!-- Compatibility Score -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-3">适配度评分</label>
+                        <div class="space-y-2">
+                            <button class="filter-btn w-full text-left px-3 py-2 rounded-lg text-sm" data-filter="score" data-value="90-100">
+                                90-100分 (极佳)
+                            </button>
+                            <button class="filter-btn w-full text-left px-3 py-2 rounded-lg text-sm" data-filter="score" data-value="80-89">
+                                80-89分 (优秀)
+                            </button>
+                            <button class="filter-btn w-full text-left px-3 py-2 rounded-lg text-sm" data-filter="score" data-value="70-79">
+                                70-79分 (良好)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Luck Level -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-3">吉凶等级</label>
+                        <div class="space-y-2">
+                            <button class="filter-btn w-full text-left px-3 py-2 rounded-lg text-sm" data-filter="luck" data-value="吉">
+                                <span class="luck-吉">●</span> 大吉
+                            </button>
+                            <button class="filter-btn w-full text-left px-3 py-2 rounded-lg text-sm" data-filter="luck" data-value="半吉">
+                                <span class="luck-半吉">●</span> 半吉
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stroke Count -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-3">笔画范围</label>
+                        <div class="space-y-2">
+                            <button class="filter-btn w-full text-left px-3 py-2 rounded-lg text-sm" data-filter="strokes" data-value="10-15">
+                                10-15画
+                            </button>
+                            <button class="filter-btn w-full text-left px-3 py-2 rounded-lg text-sm" data-filter="strokes" data-value="16-20">
+                                16-20画
+                            </button>
+                            <button class="filter-btn w-full text-left px-3 py-2 rounded-lg text-sm" data-filter="strokes" data-value="21-25">
+                                21-25画
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hexagram -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-3">周易卦象</label>
+                        <select id="hexagramFilter" class="w-full px-3 py-2 rounded-lg glass-card text-white">
+                            <option value="">全部卦象</option>
+                            <option value="山地剥卦">山地剥卦</option>
+                            <option value="山水蒙卦">山水蒙卦</option>
+                            <option value="山风蛊卦">山风蛊卦</option>
+                            <option value="山泽损卦">山泽损卦</option>
+                            <option value="艮为山卦">艮为山卦</option>
+                            <option value="山火贲卦">山火贲卦</option>
+                        </select>
+                    </div>
+
+                    <button onclick="clearFilters()" class="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors">
+                        清除筛选
+                    </button>
+                </div>
+            </div>
+
+            <!-- Names Grid -->
+            <div class="lg:col-span-3">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold text-green-400">名字列表</h2>
+                        <p class="text-gray-400 mt-1">共 <span id="totalCount">33</span> 个名字</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <select id="sortSelect" class="px-4 py-2 rounded-lg glass-card text-white">
+                            <option value="score">按适配度排序</option>
+                            <option value="strokes">按笔画排序</option>
+                            <option value="name">按名字排序</option>
+                        </select>
+                        <button onclick="compareMode()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                            对比模式
+                        </button>
+                    </div>
+                </div>
+
+                <div id="namesGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Names will be loaded here -->
+                </div>
+
+                <!-- Load More Button -->
+                <div class="text-center mt-12">
+                    <button id="loadMoreBtn" class="px-8 py-3 glass-card rounded-full hover:border-green-400 transition-colors">
+                        加载更多
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Statistics Section -->
+    <section class="py-16 bg-gradient-to-r from-gray-900 to-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12 text-green-400">数据统计</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-center">五行分布</h3>
+                    <div id="elementsChart" style="height: 300px;"></div>
+                </div>
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-center">吉凶统计</h3>
+                    <div id="luckChart" style="height: 300px;"></div>
+                </div>
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-center">笔画分布</h3>
+                    <div id="strokesChart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">© 2025 命理分析系统. 基于传统命理学的现代化名字分析工具.</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

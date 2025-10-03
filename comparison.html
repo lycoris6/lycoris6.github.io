@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>名字对比 - 命理分析系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: #1a1a1a;
+            color: #e5e5e5;
+        }
+        .glass-card {
+            background: rgba(45, 45, 45, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        .title-gradient {
+            background: linear-gradient(135deg, #4ade80, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .element-土 { background: #fbbf24; color: #1a1a1a; }
+        .element-金 { background: #e5e5e5; color: #1a1a1a; }
+        .element-木 { background: #4ade80; color: #1a1a1a; }
+        .element-水 { background: #3b82f6; color: #e5e5e5; }
+        .element-火 { background: #ef4444; color: #e5e5e5; }
+        .luck-吉 { color: #4ade80; }
+        .luck-半吉 { color: #fbbf24; }
+        .luck-凶 { color: #ef4444; }
+        .comparison-table {
+            overflow-x: auto;
+        }
+        .comparison-table table {
+            min-width: 800px;
+        }
+        .vs-divider {
+            background: linear-gradient(to bottom, transparent, #4ade80, transparent);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-card">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-xl font-bold title-gradient">命理分析</h1>
+                    <span class="text-sm text-gray-400">名字对比分析</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="index.html" class="text-gray-300 hover:text-green-300 transition-colors">首页</a>
+                    <a href="analysis.html" class="text-gray-300 hover:text-green-300 transition-colors">详细分析</a>
+                    <a href="comparison.html" class="text-green-400 hover:text-green-300 transition-colors">名字对比</a>
+                    <a href="export.html" class="text-gray-300 hover:text-green-300 transition-colors">导出Excel</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold mb-4 title-gradient">名字对比分析</h1>
+                <p class="text-gray-400">详细对比多个名字的各项指标，助您做出最佳选择</p>
+            </div>
+
+            <!-- Comparison Selection -->
+            <div class="glass-card rounded-2xl p-6 mb-8" id="selectionSection">
+                <h2 class="text-xl font-semibold mb-6 text-green-400">选择要对比的名字</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="nameSelectors">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div class="mt-6 text-center">
+                    <button onclick="startComparison()" class="px-8 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
+                        开始对比
+                    </button>
+                </div>
+            </div>
+
+            <!-- Comparison Results -->
+            <div id="comparisonResults" class="hidden">
+                <!-- Radar Chart Comparison -->
+                <div class="glass-card rounded-2xl p-6 mb-8">
+                    <h2 class="text-xl font-semibold mb-6 text-green-400">综合评分对比</h2>
+                    <div id="radarComparison" style="height: 400px;"></div>
+                </div>
+
+                <!-- Detailed Comparison Table -->
+                <div class="glass-card rounded-2xl p-6 mb-8">
+                    <h2 class="text-xl font-semibold mb-6 text-green-400">详细对比表</h2>
+                    <div class="comparison-table">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-600">
+                                    <th class="text-left py-3 px-4 text-yellow-400">对比项目</th>
+                                    <th class="text-center py-3 px-4 text-yellow-400" id="header1">名字1</th>
+                                    <th class="text-center py-3 px-4 text-yellow-400" id="header2">名字2</th>
+                                    <th class="text-center py-3 px-4 text-yellow-400" id="header3">名字3</th>
+                                    <th class="text-center py-3 px-4 text-yellow-400" id="header4">名字4</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparisonTableBody">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recommendation -->
+                <div class="glass-card rounded-2xl p-6 mb-8">
+                    <h2 class="text-xl font-semibold mb-6 text-green-400">推荐建议</h2>
+                    <div id="recommendationContent">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-4 justify-center">
+                    <button onclick="exportComparison()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                        导出对比报告
+                    </button>
+                    <button onclick="resetComparison()" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors">
+                        重新选择
+                    </button>
+                    <button onclick="window.location.href='index.html'" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
+                        返回首页
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">© 2025 命理分析系统. 基于传统命理学的现代化名字分析工具.</p>
+        </div>
+    </footer>
+
+    <script>
+        let allNames = [];
+        let selectedNames = [];
+        let compareList = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNamesData();
+            loadCompareList();
+        });
+
+        // Load names data
+        async function loadNamesData() {
+            try {
+                const response = await fetch('resources/data-complete.json');
+                const data = await response.json();
+                allNames = data.names;
+                populateNameSelectors();
+            } catch (error) {
+                console.error('Error loading names data:', error);
+                allNames = getFallbackData();
+                populateNameSelectors();
+            }
+        }
+
+        // Load compare list from localStorage
+        function loadCompareList() {
+            const stored = localStorage.getItem('compareList');
+            if (stored) {
+                compareList = JSON.parse(stored);
+                // Pre-select names from compare list
+                compareList.forEach(nameId => {
+                    const checkbox = document.querySelector(`input[value="${nameId}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+        }
+
+        // Populate name selectors
+        function populateNameSelectors() {
+            const container = document.getElementById('nameSelectors');
+            
+            // Create 4 selector slots
+            for (let i = 0; i < 4; i++) {
+                const selector = document.createElement('div');
+                selector.className = 'glass-card rounded-lg p-4';
+                selector.innerHTML = `
+                    <h3 class="font-medium mb-3 text-yellow-400">选择名字 ${i + 1}</h3>
+                    <select class="w-full px-3 py-2 rounded-lg glass-card text-white text-sm" 
+                            onchange="updateSelection(${i}, this.value)" id="selector${i}">
+                        <option value="">请选择名字</option>
+                        ${allNames.map(name => `
+                            <option value="${name.id}">${name.name} (${name.compatibility.score}分)</option>
+                        `).join('')}
+                    </select>
+                    <div class="mt-3 text-xs text-gray-400">
+                        <span id="preview${i}">未选择</span>
+                    </div>
+                `;
+                container.appendChild(selector);
+            }
+        }
+
+        // Update selection
+        function updateSelection(index, nameId) {
+            if (nameId) {
+                const name = allNames.find(n => n.id == nameId);
+                if (name) {
+                    selectedNames[index] = name;
+                    document.getElementById(`preview${index}`).textContent = 
+                        `${name.name} | ${name.total_strokes}画 | ${name.compatibility.score}分`;
+                }
+            } else {
+                selectedNames[index] = null;
+                document.getElementById(`preview${index}`).textContent = '未选择';
+            }
+        }
+
+        // Start comparison
+        function startComparison() {
+            // Filter out null selections
+            const validNames = selectedNames.filter(name => name !== null);
+            
+            if (validNames.length < 2) {
+                alert('请至少选择2个名字进行对比');
+                return;
+            }
+            
+            // Show results section
+            document.getElementById('selectionSection').classList.add('hidden');
+            document.getElementById('comparisonResults').classList.remove('hidden');
+            
+            // Generate comparison
+            generateRadarComparison(validNames);
+            generateComparisonTable(validNames);
+            generateRecommendation(validNames);
+        }
+
+        // Generate radar chart comparison
+        function generateRadarComparison(names) {
+            const chart = echarts.init(document.getElementById('radarComparison'));
+            
+            const colors = ['#4ade80', '#fbbf24', '#3b82f6', '#ef4444'];
+            const data = names.map((name, index) => ({
+                name: name.name,
+                value: [
+                    name.compatibility.score,
+                    name.compatibility.score,
+                    name.compatibility.score * 0.9,
+                    name.compatibility.score * 0.95,
+                    name.compatibility.score * 0.85
+                ],
+                itemStyle: { color: colors[index] },
+                areaStyle: { color: colors[index], opacity: 0.2 }
+            }));
+            
+            const option = {
+                tooltip: {
+                    backgroundColor: 'rgba(45, 45, 45, 0.9)',
+                    borderColor: '#4ade80',
+                    textStyle: { color: '#e5e5e5' }
+                },
+                legend: {
+                    data: names.map(name => name.name),
+                    textStyle: { color: '#e5e5e5' },
+                    bottom: 0
+                },
+                radar: {
+                    indicator: [
+                        { name: '五行适配', max: 100 },
+                        { name: '生肖契合', max: 100 },
+                        { name: '数理吉凶', max: 100 },
+                        { name: '卦象寓意', max: 100 },
+                        { name: '音律美感', max: 100 }
+                    ],
+                    axisName: { color: '#e5e5e5' },
+                    splitLine: { lineStyle: { color: '#2d2d2d' } },
+                    splitArea: { show: false }
+                },
+                series: [{
+                    type: 'radar',
+                    data: data
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+
+        // Generate comparison table
+        function generateComparisonTable(names) {
+            // Update headers
+            names.forEach((name, index) => {
+                document.getElementById(`header${index + 1}`).textContent = name.name;
+            });
+            
+            // Hide unused columns
+            for (let i = names.length; i < 4; i++) {
+                document.getElementById(`header${i + 1}`).style.display = 'none';
+            }
+            
+            // Generate table rows
+            const tbody = document.getElementById('comparisonTableBody');
+            const rows = [
+                { label: '拼音', getValue: (name) => name.pinyin },
+                { label: '总笔画', getValue: (name) => name.total_strokes + '画' },
+                { label: '适配度', getValue: (name) => name.compatibility.score + '分' },
+                { label: '五行属性', getValue: (name) => `${name.elements.character1.element} + ${name.elements.character2.element}` },
+                { label: '生肖契合', getValue: (name) => name.compatibility.favorable_roots.join(', ') },
+                { label: '天格', getValue: (name) => `${name.numerology.tian_ge.value} (${name.numerology.tian_ge.element}/${name.numerology.tian_ge.luck})` },
+                { label: '人格', getValue: (name) => `${name.numerology.ren_ge.value} (${name.numerology.ren_ge.element}/${name.numerology.ren_ge.luck})` },
+                { label: '地格', getValue: (name) => `${name.numerology.di_ge.value} (${name.numerology.di_ge.element}/${name.numerology.di_ge.luck})` },
+                { label: '总格', getValue: (name) => `${name.numerology.zong_ge.value} (${name.numerology.zong_ge.element}/${name.numerology.zong_ge.luck})` },
+                { label: '三才配置', getValue: (name) => name.numerology.san_cai },
+                { label: '周易卦象', getValue: (name) => name.hexagram.name },
+                { label: '卦象寓意', getValue: (name) => name.hexagram.meaning },
+                { label: '名字寓意', getValue: (name) => name.meaning.interpretation },
+                { label: '风险提示', getValue: (name) => name.risks.length > 0 ? name.risks.join('; ') : '无' }
+            ];
+            
+            tbody.innerHTML = rows.map(row => `
+                <tr class="border-b border-gray-700">
+                    <td class="py-3 px-4 font-medium text-yellow-400">${row.label}</td>
+                    ${names.map((name, index) => `
+                        <td class="py-3 px-4 text-center text-gray-300">${row.getValue(name)}</td>
+                    `).join('')}
+                </tr>
+            `).join('');
+        }
+
+        // Generate recommendation
+        function generateRecommendation(names) {
+            const container = document.getElementById('recommendationContent');
+            
+            // Sort by score
+            const sortedNames = [...names].sort((a, b) => b.compatibility.score - a.compatibility.score);
+            const bestName = sortedNames[0];
+            
+            let recommendation = `
+                <div class="glass-card rounded-lg p-6">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-medium text-green-400">推荐选择</h3>
+                    </div>
+                    <div class="mb-4">
+                        <span class="text-2xl font-bold text-yellow-400">${bestName.name}</span>
+                        <span class="ml-4 text-green-400">${bestName.compatibility.score}分</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">${bestName.meaning.interpretation}</p>
+                    <div class="text-sm text-gray-400">
+                        <p><strong>理由:</strong> 此名字在五行适配、生肖契合、数理吉凶等方面表现最为优秀，综合评分最高。</p>
+                    </div>
+                </div>
+            `;
+            
+            if (names.length > 1) {
+                recommendation += `
+                    <div class="mt-6">
+                        <h4 class="font-medium text-yellow-400 mb-4">其他选择建议</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${sortedNames.slice(1).map(name => `
+                                <div class="glass-card rounded-lg p-4">
+                                    <h5 class="font-medium text-blue-400">${name.name}</h5>
+                                    <p class="text-sm text-gray-400 mt-1">${name.compatibility.score}分 - ${name.meaning.interpretation}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = recommendation;
+        }
+
+        // Export comparison
+        function exportComparison() {
+            const validNames = selectedNames.filter(name => name !== null);
+            
+            let report = `
+名字对比分析报告
+生成时间: ${new Date().toLocaleString()}
+
+对比名字:
+${validNames.map((name, index) => `${index + 1}. ${name.name} (${name.pinyin}) - ${name.compatibility.score}分`).join('\n')}
+
+详细对比:
+`;
+
+            // Add comparison details
+            const comparisonData = [
+                { label: '总笔画', getValue: (name) => name.total_strokes + '画' },
+                { label: '五行属性', getValue: (name) => `${name.elements.character1.element} + ${name.elements.character2.element}` },
+                { label: '生肖契合', getValue: (name) => name.compatibility.favorable_roots.join(', ') },
+                { label: '天格', getValue: (name) => `${name.numerology.tian_ge.value} (${name.numerology.tian_ge.element}/${name.numerology.tian_ge.luck})` },
+                { label: '人格', getValue: (name) => `${name.numerology.ren_ge.value} (${name.numerology.ren_ge.element}/${name.numerology.ren_ge.luck})` },
+                { label: '地格', getValue: (name) => `${name.numerology.di_ge.value} (${name.numerology.di_ge.element}/${name.numerology.di_ge.luck})` },
+                { label: '总格', getValue: (name) => `${name.numerology.zong_ge.value} (${name.numerology.zong_ge.element}/${name.numerology.zong_ge.luck})` },
+                { label: '三才配置', getValue: (name) => name.numerology.san_cai },
+                { label: '周易卦象', getValue: (name) => name.hexagram.name },
+                { label: '名字寓意', getValue: (name) => name.meaning.interpretation }
+            ];
+
+            comparisonData.forEach(row => {
+                report += `\n${row.label}:\n`;
+                validNames.forEach((name, index) => {
+                    report += `  ${name.name}: ${row.getValue(name)}\n`;
+                });
+            });
+
+            // Add recommendation
+            const sortedNames = [...validNames].sort((a, b) => b.compatibility.score - a.compatibility.score);
+            const bestName = sortedNames[0];
+            
+            report += `
+
+推荐选择: ${bestName.name}
+理由: 综合评分最高，各项配置较为理想。
+
+此报告由命理分析系统生成
+`;
+
+            // Create and download file
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '名字对比分析报告.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Reset comparison
+        function resetComparison() {
+            document.getElementById('comparisonResults').classList.add('hidden');
+            document.getElementById('selectionSection').classList.remove('hidden');
+            selectedNames = [];
+            
+            // Reset selectors
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`selector${i}`).value = '';
+                document.getElementById(`preview${i}`).textContent = '未选择';
+            }
+        }
+
+        // Fallback data
+        function getFallbackData() {
+            return [
+                {
+                    id: 1,
+                    name: "李垣岩",
+                    pinyin: "li yuan yan",
+                    elements: {
+                        character1: { char: "垣", strokes: 9, element: "土", radical: "土部" },
+                        character2: { char: "岩", strokes: 8, element: "土", radical: "山部" }
+                    },
+                    compatibility: {
+                        zodiac: "蛇",
+                        favorable_roots: ["山", "土"],
+                        score: 95
+                    },
+                    numerology: {
+                        tian_ge: { value: 7, element: "金", luck: "吉" },
+                        ren_ge: { value: 16, element: "土", luck: "吉" },
+                        di_ge: { value: 17, element: "金", luck: "吉" },
+                        zong_ge: { value: 24, element: "火", luck: "吉" },
+                        san_cai: "金土金"
+                    },
+                    hexagram: {
+                        name: "山地剥卦",
+                        meaning: "厚积薄发",
+                        calculation: "总笔画17÷8余1→乾卦"
+                    },
+                    meaning: {
+                        symbolism: "垣表坚固，岩喻稳重",
+                        interpretation: "象征意志坚定、根基深厚"
+                    },
+                    risks: [],
+                    notes: "岩书写需注意结构规范",
+                    total_strokes: 17
+                }
+            ];
+        }
+    </script>
+</body>
+</html>
